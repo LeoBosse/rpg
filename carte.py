@@ -17,6 +17,7 @@ class World_Map:
 
 
 
+
 		#Creation of the lines
 		# self.mean_biom_length 	= 100
 		self.tab = []
@@ -27,17 +28,34 @@ class World_Map:
 			for j in xrange(self.nb_columns):
 				if(i%3==0 and j%3==0):
 					self.tab[i][j] = Cell("tree")
+		self.Load("save/edit")
 
 
 	def Load(self, file_name):
+		print("Loading...")
 		with open(file_name, 'rb') as file:
 			 depickler = pickle.Unpickler(file)
-			 self.tab = depickler.load()
+			 self.name_tab = depickler.load()
+
+		self.tab = []
+		for i in xrange(self.nb_lines):
+			self.tab.append([])
+			for j in xrange(self.nb_columns):
+				self.tab[i].append(Cell(self.name_tab[i][j]))
+		print("Loaded")
 
 	def Save(self, file_name):
+		print("Saving...")
+		self.name_tab = []
+		for i in xrange(self.nb_lines):
+			self.name_tab.append([])
+			for j in xrange(self.nb_columns):
+				self.name_tab[i].append(self.tab[i][j].name)
 		with open(file_name, 'wb') as file:
 			 pickler = pickle.Pickler(file)
-			 pickler.dump(self.tab)
+			 pickler.dump(self.name_tab)
+		print("Saved")
+
 
 ### World POSITIONS is the cell id expressed in PIXELS (0, 0) = top left corner
 ### World COORDINATES is the cell id expressed in CELL NUMBERS (0, 0) = top left corner
@@ -46,11 +64,17 @@ class World_Map:
 	def GetCellFromPosition(self, (w_x, w_y)):
 		"""Get Cell object corresponding to a world position (w_x, w_y)"""
 		line, col = self.GetCellCoordinates((w_x, w_y))
-		return self.tab[line][col]
+		if 0 < line < len(self.tab) and 0 < col < len(self.tab[line]):
+			return self.tab[line][col]
+		else:
+			return Cell("noir")
 
 	def GetCellFromCoordinates(self, (w_l, w_c)):
 		"""Get Cell object corresponding to a world coordinates (w_line, w_col)"""
-		return self.tab[w_l][w_c]
+		if 0 < w_l < len(self.tab) and 0 < w_c < len(self.tab[w_l]):
+			return self.tab[w_l][w_c]
+		else:
+			return Cell("noir")
 
 	def GetCellCoordinates(self, (w_x, w_y)):
 		"""Get Cell corrdinates (line and column) corresponding to a world coordinates (w_x, w_y)"""
@@ -269,6 +293,8 @@ class Cell:
 		self.height 		= CELL_HEIGHT
 		self.friction 		= -5.
 
+		# self.inventory = Inventory()
+
 		if self.name == "ground":
 			self.image 			= I_GRASS
 			self.image_shadow 	= I_GRASS
@@ -282,6 +308,16 @@ class Cell:
 			self.collide		= True
 			# self.transparent	= False
 
+		elif self.name == "tree":
+			self.image 			= I_BLACK
+			self.image_shadow 	= I_BLACK
+			self.collide		= True
+			# self.transparent	= False
+
+		else:
+			self.image 			= I_BLACK
+			self.image_shadow 	= I_BLACK
+			self.collide		= True
 
 	def GetImage(self, visible = True):
 		if visible:

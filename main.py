@@ -3,7 +3,7 @@
 ##!/usr/local/bin/python3
 
 from header import *
-#from items import *
+from items import *
 from perso import *
 from carte import *
 from world import *

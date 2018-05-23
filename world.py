@@ -13,7 +13,7 @@ class World:
 		# self.gravity	= 80 #gravity force pulling everything down (defined positive)
 
 		self.nb_lines	= NB_CELLS_WORLD_X
-		self.nb_columns		= NB_CELLS_WORLD_Y
+		self.nb_columns	= NB_CELLS_WORLD_Y
 
 
 		# self.InitBioms()

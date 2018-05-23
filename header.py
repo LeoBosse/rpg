@@ -15,6 +15,10 @@ import random as rand
 
 import pickle
 
+PATH = "/home/leo/ProgrammesPython/rpg"
+
+
+
 a = pygame.init()[1]
 while a != 0:
 	a = pygame.init()[1]
@@ -49,6 +53,8 @@ WORLD_HEIGHT   	= NB_CELLS_WORLD_Y * CELL_HEIGHT
 g_fps 			= 30		#g_fps turns per seconds
 g_turn_duration	= 1./g_fps	#duration of a turn (in seconds)
 
+cells_list = ["ground", "tree"]
 
 I_GRASS			= pygame.image.load("images/herbe.bmp").convert()
 I_TREE			= pygame.image.load("images/arbre.bmp").convert()
+I_BLACK			= pygame.image.load("images/noir.bmp").convert()

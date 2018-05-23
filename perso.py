@@ -7,13 +7,22 @@ from header import *
 
 class Perso:
 	"""Classe du perso : informations, mouvement..."""
-	def __init__(self, world, load=False):
+	def __init__(self, world, load = False):
 		"""init le perso, son fichier et son inventaire"""
 
-		self.speed			= 5
+		self.speed			= 10
 		self.speeds			= [0, 0] #speed [east+/west-, up+/down-]
+		self.direction		= -1 #-1: not moving, 0: south, 1: east, 2:north, 3:west
+		self.image			= pygame.image.load("images/perso_S_1.bmp").convert_alpha()
+		self.animation_lenght= 2
+		self.animation_speed = 0.5
+		self.frame_counter = 0
+		self.images_list	= [	[pygame.image.load("images/perso_S_1.bmp").convert_alpha(),
+		 pygame.image.load("images/perso_S_2.bmp").convert_alpha()],
+								[pygame.image.load("images/perso_E_1.bmp").convert_alpha(),   pygame.image.load("images/perso_E_2.bmp").convert_alpha()],
+								[pygame.image.load("images/perso_N_1.bmp").convert_alpha(), pygame.image.load("images/perso_N_2.bmp").convert_alpha()],
+								[pygame.image.load("images/perso_W_1.bmp").convert_alpha(), pygame.image.load("images/perso_W_2.bmp").convert_alpha()]]
 
-		self.image			= pygame.image.load("images/perso.bmp").convert_alpha()
 		self.image_width	= 10
 		self.image_height	= 20
 		self.image.set_colorkey((0,0,255))
@@ -25,7 +34,8 @@ class Perso:
 		self.rect		= pygame.Rect(int(WORLD_WIDTH/2), (int(WORLD_HEIGHT/2)), self.image_width, self.image_height)
 		self.mass		= 1
 
-		self.memory		= 500 					#in cell numbers
+		# self.inventory = Inventory()
+
 		self.vision		= 100					#Maximum distance the perso can see by default (in pixels)
 		#self.hp			= 500
 		#self.max_hp		= 500
@@ -44,30 +54,44 @@ class Perso:
 	def PlayTurn(self, game, world):
 		self.Move(game, world)
 
+	def GetVisionRadius(self):
+		"""Return the furthest distance the perso can see (in pixels). Should take object into account for the future"""
+		return self.vision
+
 	def CalculateSpeedFromExternalEvents(self, game):
 		"""Get the speed of Perso, from the presed directional keys."""
 
 		if game.pressed_keys["east"] and not game.pressed_keys["west"]:
 			self.speeds[0] = self.speed
+			self.direction = 1
 		elif game.pressed_keys["west"] and not game.pressed_keys["east"]:
 			self.speeds[0] = -self.speed
+			self.direction = 3
 		else:
 			self.speeds[0] = 0
+			self.direction = -1
 
 		if game.pressed_keys["south"] and not game.pressed_keys["north"]:
 			self.speeds[1] = self.speed
+			self.direction = 0
 		elif game.pressed_keys["north"] and not game.pressed_keys["south"]:
 			self.speeds[1] = -self.speed
+			self.direction = 2
 		else:
 			self.speeds[1] = 0
+			if self.direction != 1 and self.direction != 3:
+				self.direction = -1
 
-	def GetVisionRadius(self):
-		"""Return the furthest distance the perso can see (in pixels). Should take object into account for the future"""
-		return self.vision
+
+	def GetImage(self):
+		if self.direction >= 0:
+			self.frame_counter += 1
+			return self.images_list[self.direction][int(self.frame_counter * self.animation_speed) % self.animation_lenght]
+		else:
+			return self.image
 
 
 	def Move(self, game, world):
-
 		self.CalculateSpeedFromExternalEvents(game)
 		nx, ny = self.rect.x + int(self.speeds[0]), self.rect.y + int(self.speeds[1])
 		new_x , new_y, coll_x, coll_y = self.Collision(nx, ny, world)
@@ -79,25 +103,21 @@ class Perso:
 		collision_x = False
 		collision_y = False
 # Collisions avec les bords
-		if nx >= WORLD_WIDTH - SCREEN_WIDTH:
-			nx 				= WORLD_WIDTH - SCREEN_WIDTH - self.rect.width
+		if nx >= WORLD_WIDTH - (SCREEN_WIDTH + self.rect.w) / 2:
+			nx 				= WORLD_WIDTH - (SCREEN_WIDTH + self.rect.w) / 2
 			self.speeds[0] 	= 0
-			self.forces[0]	= 0
 			collision_x 	= True
-		elif nx < SCREEN_WIDTH:
-			nx 				= SCREEN_WIDTH
+		elif nx < (SCREEN_WIDTH - self.rect.w) / 2:
+			nx 				= (SCREEN_WIDTH - self.rect.w) / 2
 			self.speeds[0] 	= 0
-			self.forces[0]	= 0
 			collision_x 	= True
-		if ny >= WORLD_HEIGHT - self.rect.height - SCREEN_HEIGHT:
-			ny 				= WORLD_HEIGHT - self.rect.height - SCREEN_HEIGHT
+		if ny >= WORLD_HEIGHT - (SCREEN_HEIGHT + self.rect.h) / 2:
+			ny 				= WORLD_HEIGHT - (SCREEN_HEIGHT + self.rect.h) / 2
 			self.speeds[1] 	= 0
-			self.forces[1]	= 0
 			collision_y 	= True
-		elif ny < SCREEN_HEIGHT:
-			ny				= SCREEN_HEIGHT
+		elif ny < (SCREEN_HEIGHT - self.rect.h) / 2:
+			ny				= (SCREEN_HEIGHT - self.rect.h) / 2
 			self.speeds[1] 	= 0
-			self.forces[1]	= 0
 			collision_y 	= True
 
 #Collisions avec le terrain
@@ -110,6 +130,7 @@ class Perso:
 			for j in range (-5, 5):
 				if world.world_map.GetCellFromCoordinates((perso_l + i, perso_c + j)).collide:
 					obstacles.append(world.world_map.GetCellRectFromCoordinates((perso_l + i, perso_c + j)))
+
 
 		for i in obstacles:
 			if   i.left - self.rect.w <= nx <= i.right and i.top - self.rect.h < self.rect.y < i.bottom and self.rect.x <= i.left - self.rect.w:#Going right, colliding with left wall
@@ -242,7 +263,7 @@ class Perso:
 	def Display(self, fenetre):
 		"""Always display perso on screen center"""
 
-		fenetre.blit(self.image, (int((SCREEN_WIDTH - self.rect.w)/2), int((SCREEN_HEIGHT - self.rect.h)/2)))
+		fenetre.blit(self.GetImage(), (int((SCREEN_WIDTH - self.rect.w)/2), int((SCREEN_HEIGHT - self.rect.h)/2)))
 
 		#text_l		= font.render("l: "		+ str(self.rect.x), True, (0,0,0), None)
 		#text_c		= font.render("c: "		+ str(self.rect.y), True, (0,0,0), None)
