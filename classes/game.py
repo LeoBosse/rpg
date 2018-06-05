@@ -18,8 +18,6 @@ class Game:
 		self.continuer 	= 1
 		self.number = number
 
-
-
 		#Keep track of witch keyboard key is pressed
 		self.pressed_keys = {	"north": 	False,
 								"south":	False,
@@ -33,9 +31,17 @@ class Game:
 									#}
 
 		self.path = os.getcwd()
-		self.saving_file = str(self.path) + "/save/save_" + str(self.number)
+		self.file_name = str(self.path) + "/save/save_" + str(self.number)
+
 
 		self.world = World() #init world
+
+	def Save(self, file_name):
+		print("Saving...")
+		with open(file_name, 'wb') as file:
+			 pickler = pickle.Pickler(file)
+			 pickler.dump(self)
+		print("Saved")
 
 
 	def Play(self, fenetre):
@@ -56,7 +62,7 @@ class Game:
 
 	def PlayTurn(self):
 		self.IncrementPressedKeysDuration()
-		self.world.PlayTurn(self)
+		self.world.PlayTurn(self.pressed_keys)
 		self.GetExternalEvents()
 		self.EndTurn()
 
@@ -94,7 +100,10 @@ class Game:
 				if event.key == K_UP or event.key == K_z:
 					self.pressed_keys["north"] = g_turn_duration
 				elif event.key == K_DOWN or event.key == K_s:
-					self.pressed_keys["south"] = g_turn_duration
+					if pygame.key.get_pressed()[K_LCTRL] or pygame.key.get_pressed()[K_RCTRL]:
+						self.Save(self.file_name)
+					else:
+						self.pressed_keys["south"] = True
 				elif event.key==K_LEFT or event.key == K_q:
 					self.pressed_keys["west"] = g_turn_duration
 				elif event.key==K_RIGHT or event.key == K_d:

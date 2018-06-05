@@ -30,51 +30,6 @@ from classes.world import *
 from classes.game import *
 #from mob import *
 from classes.editor import *
-#
-# PATH = "/home/leo/ProgrammesPython/rpg/"
-#
-#
-# a = pygame.init()[1]
-# while a != 0:
-# 	a = pygame.init()[1]
-#
-# font = pygame.font.SysFont(pygame.font.get_default_font(), 25)
-# font2 = pygame.font.SysFont(pygame.font.get_default_font(), 20)
-#
-# Info = pygame.display.Info()
-#
-# SCREEN_HEIGHT	= Info.current_h-100
-# SCREEN_WIDTH	= Info.current_w-100
-#
-# fenetre = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-# pygame.display.set_caption("RPG")
-#
-#
-# CELL_WIDTH 			= 20
-# CELL_HEIGHT  		= 20
-#
-# NB_CELLS_SCREEN_X 	= int(SCREEN_WIDTH / CELL_WIDTH + 1)
-# NB_CELLS_SCREEN_Y	= int(SCREEN_HEIGHT / CELL_HEIGHT + 1)
-#
-# NB_CELLS_WORLD_X 	= NB_CELLS_SCREEN_X * 10
-# NB_CELLS_WORLD_Y 	= NB_CELLS_SCREEN_Y * 10
-#
-# NB_PIX_SCREEN_X   	= NB_CELLS_SCREEN_X * CELL_WIDTH
-# NB_PIX_SCREEN_Y   	= NB_CELLS_SCREEN_Y * CELL_HEIGHT
-#
-# WORLD_WIDTH  	= NB_CELLS_WORLD_X * CELL_WIDTH
-# WORLD_HEIGHT   	= NB_CELLS_WORLD_Y * CELL_HEIGHT
-#
-# g_fps 			= 30		#g_fps turns per seconds
-# g_turn_duration	= 1./g_fps	#duration of a turn (in seconds)
-#
-# cells_list = ["grass", "tree", "water", "rock", "black"]
-#
-# I_GRASS			= pygame.image.load("images/grass.bmp").convert()
-# I_TREE			= pygame.image.load("images/tree.bmp").convert()
-# I_BLACK			= pygame.image.load("images/black.bmp").convert()
-# I_WATER			= pygame.image.load("images/water.bmp").convert()
-# I_ROCK			= pygame.image.load("images/rock.bmp").convert()
 
 
 def Main():
@@ -85,10 +40,10 @@ def Main():
 	pygame.display.set_caption("RPG")
 
 	text_titre="WELCOME!"
-	text_game1="GAME 1"
-	text_game2="GAME 2"
-	text_game3="GAME 3"
-	text_edit="Edit"
+	text_game1="GAME 1 (press a)"
+	text_game2="GAME 2 (press b)"
+	text_game3="GAME 3 (press c)"
+	text_edit="Edit (press e)"
 
 	surf_titre=font.render(text_titre, True, (255,255,255), None)
 	s_titre=font.size(text_titre)
@@ -137,12 +92,28 @@ def Main():
 						wait_event=False
 
 		if play:
-			game = Game(game_number)
+			try:
+				with open(PATH + "/save/save_" + str(game_number), 'rb') as file:
+					depickler = pickle.Unpickler(file)
+					game = depickler.load()
+					print("Game loaded")
+			except:
+				game = Game(game_number)
+				print("Game created")
+
 			game.Play(fenetre)
+
+			
 		if edit:
-			print("Creating editor")
-			edit = Editor()
-			print("Editor created")
+			try:
+				with open(PATH + "/save/edit", 'rb') as file:
+					depickler = pickle.Unpickler(file)
+					edit = depickler.load()
+					print("Editor loaded")
+			except:
+				edit = Editor()
+				print("Editor created")
+
 			edit.Edit(fenetre)
 
 	pygame.quit()

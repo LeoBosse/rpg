@@ -9,79 +9,93 @@ from classes.items import *
 # #from mob import *
 # from classes.editor import *
 
-
-class Perso:
-	"""Classe du perso : informations, mouvement..."""
-	def __init__(self, world, load = False):
+class Character:
+	"""Classe de character, personnage, etre animés : informations, mouvement..."""
+	def __init__(self, name="default", pos=(0,0)):
 		"""init le perso, son fichier et son inventaire"""
 
-		self.speed			= 10
+		self.name = name
+
+		self.speed			= 0
 		self.speeds			= [0, 0] #speed [east+/west-, up+/down-]
 		self.direction		= -1 #-1: not moving, 0: south, 1: east, 2:north, 3:west
-		self.images_folder	= "images/perso/"
-		self.image			= pygame.image.load(self.images_folder + "perso_S_1.bmp").convert_alpha()
-		self.animation_lenght= 2
+
+		self.text_file		= "data/text/" + name
+		self.speech_index	= 0
+		try:
+			self.speech_list	= open(self.text_file, "r").read().split("\n\n")
+		except:
+			self.speech_list	= open(self.text_file, "a").close()
+			self.speech_list	= open(self.text_file, "r").read().split("\n\n")
+
+		self.speech_list	= [i for i in self.speech_list if i]
+		# for i in range(len(self.speech_list)):
+		# 	if not self.speech_list[- 1 - i]:
+		# 		del self.speech_list[- 1 - i]
+		# self.speech_list	= [i.replace("\\", "\n") for i in self.speech_list]
+		print(self.speech_list)
+		self.speaking		= False
+		self.speech			= ""
+		self.speech_rect	= pygame.Rect(0,0,0,0)
+
+		self.images_folder	= "data/images/characters/"
+		self.image			= "I_PNG"
+		self.animation_lenght= 1
 		self.animation_speed = 0.5
 		self.frame_counter = 0
-		self.images_list	= [	[pygame.image.load(self.images_folder + "perso_S_1.bmp").convert_alpha(),
-		 pygame.image.load(self.images_folder + "perso_S_2.bmp").convert_alpha()],
-								[pygame.image.load(self.images_folder + "perso_E_1.bmp").convert_alpha(),   pygame.image.load(self.images_folder + "perso_E_2.bmp").convert_alpha()],
-								[pygame.image.load(self.images_folder + "perso_N_1.bmp").convert_alpha(), pygame.image.load(self.images_folder + "perso_N_2.bmp").convert_alpha()],
-								[pygame.image.load(self.images_folder + "perso_W_1.bmp").convert_alpha(), pygame.image.load(self.images_folder + "perso_W_2.bmp").convert_alpha()]]
+		self.images_list	= [[self.image],[self.image],[self.image],[self.image]]
 
 		self.image_width	= 10
 		self.image_height	= 20
-		self.image.set_colorkey((0,0,255))
 
-		#Keep track of the number of jumps left (double jump at max)
-		self.max_jumps	= 20
-		self.jumps		= self.max_jumps
-
-		self.rect		= pygame.Rect(int(WORLD_WIDTH/2), (int(WORLD_HEIGHT/2)), self.image_width, self.image_height)
+		self.rect		= pygame.Rect(pos[0], pos[1], self.image_width, self.image_height)
 		self.mass		= 1
 
 		self.inventory = Inventory()
-		self.inventory.AddItem(Sword("base_sword", 10, 10, 1))
 
 		self.vision		= 100					#Maximum distance the perso can see by default (in pixels)
-		#self.hp			= 500
-		#self.max_hp		= 500
-		#self.timer_hit	= 0.
-		#self.atk		= 20
-		#self.timer_atk	= 0.
-		#self.delai_atk	= 0.2
-		#self.heal		= 0.05
-		#self.exp		= 0
-		#self.max_exp	= 1000
-		#self.cave_view	= 10
 
-		#self.hitbox		= self.rect
+	def GetPositionOnScreen(self, screen_position=(0,0)):
+		return self.rect.x - screen_position[0], self.rect.y - screen_position[1]
 
 
-	def PlayTurn(self, game, world):
-		self.Move(game, world)
+	def Speak(self):
+		self.speaking = True
+		self.speech = self.GetSpeechLine()
+		self.speech = [font.render(s.strip(), True, (0,0,0), (255,255,255)) for s in self.speech]
+		# w, h = font.size(self.speech)
+
+		# self.speech_rect = pygame.Rect(self.rect.centerx - w / 2, self.rect.top - h, w, h)
+
+
+	def GetSpeechLine(self):
+		return self.speech_list[self.speech_index].replace("\0", "").split("\\n")
+
+
+	def PlayTurn(self, pressed_keys, world):
+		self.Move(pressed_keys, world)
 
 	def GetVisionRadius(self):
 		"""Return the furthest distance the perso can see (in pixels). Should take object into account for the future"""
 		return self.vision
 
-	def CalculateSpeedFromExternalEvents(self, game):
+	def CalculateSpeedFromExternalEvents(self, pressed_keys):
 		"""Get the speed of Perso, from the presed directional keys."""
 
-		if game.pressed_keys["east"] and not game.pressed_keys["west"]:
+		if pressed_keys["east"] and not pressed_keys["west"]:
 			self.speeds[0] = self.speed
 			self.direction = 1
-		elif game.pressed_keys["west"] and not game.pressed_keys["east"]:
+		elif pressed_keys["west"] and not pressed_keys["east"]:
 			self.speeds[0] = -self.speed
 			self.direction = 3
 		else:
 			self.speeds[0] = 0
 			self.direction = -1
 
-		if game.pressed_keys["south"] and not game.pressed_keys["north"]:
+		if pressed_keys["south"] and not pressed_keys["north"]:
 			self.speeds[1] = self.speed
 			self.direction = 0
-		elif game.pressed_keys["north"] and not game.pressed_keys["south"]:
+		elif pressed_keys["north"] and not pressed_keys["south"]:
 			self.speeds[1] = -self.speed
 			self.direction = 2
 		else:
@@ -96,14 +110,21 @@ class Perso:
 	def GetImage(self):
 		if self.direction >= 0:
 			self.frame_counter += 1
-			return self.images_list[self.direction][int(self.frame_counter * self.animation_speed) % self.animation_lenght]
+			return images_dict[self.images_list[self.direction][int(self.frame_counter * self.animation_speed) % self.animation_lenght]]
 		else:
-			return self.image
+			return images_dict[self.image]
 
 
-	def Move(self, game, world):
-		self.CalculateSpeedFromExternalEvents(game)
-		nx, ny = self.rect.x + int(self.speeds[0]), self.rect.y + int(self.speeds[1])
+	def IsOnscreen(self, screen_pos):
+		sx, sy = screen_pos
+		if sx < self.rect.x < sx + NB_PIX_SCREEN_X and sy < self.rect.y < sy + NB_PIX_SCREEN_Y:
+			return True
+		else:
+			return False
+
+	def Move(self, pressed_keys, world):
+		# nx, ny = self.rect.x + int(self.speed * rand.uniform(-1, 1)), self.rect.y + int(self.speed * rand.uniform(-1, 1))
+		nx, ny = self.rect.x, self.rect.y
 		new_x , new_y, coll_x, coll_y = self.Collision(nx, ny, world)
 		self.rect.topleft = new_x, new_y
 
@@ -159,7 +180,6 @@ class Perso:
 				ny				= i.top - self.rect.h;
 				self.speeds[1] 	= 0;
 				collision_y		= True;
-				if self.jumps < self.max_jumps: self.jumps += 1
 			elif i.left - self.rect.w < self.rect.x < i.right and i.top - self.rect.h <= ny <= i.bottom and self.rect.y >= i.bottom:#Going up, colliding with bottom wall
 				#print("up")
 				ny				= i.bottom;
@@ -269,10 +289,51 @@ class Perso:
 		"""Return the position of the screen origin (upper left corner) in world coordinates from perso position"""
 		return (int(self.rect.x - (SCREEN_WIDTH - self.rect.w)/2), int(self.rect.y - (SCREEN_HEIGHT - self.rect.h)/2))
 
+
+	def Display(self, fenetre, pos):
+		"""Display the character on the screen at the given screen position"""
+		fenetre.blit(self.GetImage(), pos)
+		if self.speaking:
+			px, py = pos
+			for i, s in enumerate(self.speech):
+				text_pos = px, py - (len(self.speech) - i) * font.get_linesize() - 10
+				fenetre.blit(s, text_pos)
+
+
+
+
+
+class Perso(Character):
+	def __init__(self):
+		Character.__init__(self, "adventurer", pos=(int(WORLD_WIDTH/2), int(WORLD_HEIGHT/2)))
+		self.speed			= 10
+		self.speeds			= [0, 0] #speed [east+/west-, up+/down-]
+		self.direction		= -1 #-1: not moving, 0: south, 1: east, 2:north, 3:west
+		self.images_folder	= "data/images/characters/perso/"
+		self.image			= "I_PERSO_S_1"
+		self.animation_lenght= 2
+		self.animation_speed = 0.5
+		self.frame_counter = 0
+		self.images_list	= [	["I_PERSO_S_1", "I_PERSO_S_2"],
+								["I_PERSO_E_1", "I_PERSO_E_2"],
+								["I_PERSO_W_1", "I_PERSO_W_2"],
+								["I_PERSO_N_1", "I_PERSO_N_2"]]
+
+		self.position_on_screen = ((NB_PIX_SCREEN_X - self.rect.w) / 2, (NB_PIX_SCREEN_Y - self.rect.h) / 2)
+
+		self.inventory.AddItem(Sword("base_sword", 10, 10, 1))
+
+	def Move(self, pressed_keys, world):
+		self.CalculateSpeedFromExternalEvents(pressed_keys)
+		nx, ny = self.rect.x + int(self.speeds[0]), self.rect.y + int(self.speeds[1])
+		new_x , new_y, coll_x, coll_y = self.Collision(nx, ny, world)
+		self.rect.topleft = new_x, new_y
+
+
 	def Display(self, fenetre):
 		"""Always display perso on screen center"""
 
-		fenetre.blit(self.GetImage(), (int((SCREEN_WIDTH - self.rect.w)/2), int((SCREEN_HEIGHT - self.rect.h)/2)))
+		fenetre.blit(self.GetImage(), self.position_on_screen)
 
 		line = int(self.rect.x / CELL_WIDTH)
 		col  = int(self.rect.y / CELL_HEIGHT)
@@ -283,3 +344,8 @@ class Perso:
 		fenetre.blit(text_l, 	(0, 0))
 		fenetre.blit(text_c, 	(0, font.get_linesize()))
 		fenetre.blit(text_dir, 	(0, 2*font.get_linesize()))
+
+class PNG(Character):
+	def __init__(self, name = "default", pos=(0,0)):
+		Character.__init__(self, name, pos)
+		self.speed			= 10

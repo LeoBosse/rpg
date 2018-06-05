@@ -34,26 +34,39 @@ class World_Map:
 		print("Loading...")
 		with open(file_name, 'rb') as file:
 			 depickler = pickle.Unpickler(file)
-			 self.name_tab = depickler.load()
+			 self.loaded_tab = depickler.load()
 
 		self.tab = []
 		for i in range(self.nb_lines):
 			self.tab.append([])
 			for j in range(self.nb_columns):
-				self.tab[i].append(Cell(self.name_tab[i][j]))
+				try:
+					self.tab[i].append(Cell(self.loaded_tab[i][j]))
+				except:
+					self.tab[i].append(Cell("grass"))
 		print("Loaded")
+
 
 	def Save(self, file_name):
 		print("Saving...")
-		self.name_tab = []
+		self.saved_tab = []
 		for i in range(self.nb_lines):
-			self.name_tab.append([])
+			self.saved_tab.append([])
 			for j in range(self.nb_columns):
-				self.name_tab[i].append(self.tab[i][j].name)
+				self.saved_tab[i].append(self.tab[i][j].GetSavedAttribute())
 		with open(file_name, 'wb') as file:
 			 pickler = pickle.Pickler(file)
-			 pickler.dump(self.name_tab)
+			 pickler.dump(self.saved_tab)
 		print("Saved")
+
+
+	def InoccupyCell(self, png):
+		l, c = self.GetCellCoordinates(png.rect.center)
+		self.tab[l][c].occupied = False
+
+	def OccupyCell(self, png):
+		l, c = self.GetCellCoordinates(png.rect.center)
+		self.tab[l][c].occupied = png
 
 
 ### World POSITIONS is the cell id expressed in PIXELS (0, 0) = top left corner
@@ -132,45 +145,72 @@ class World_Map:
 
 class Cell:
 	def __init__(self, cell_type):
-		self.name			= cell_type
+		if type(cell_type) == type(str()):
+			self.name		= cell_type
+			self.inventory 	= Inventory()
+		else:
+			self.name		= cell_type[0]
+			self.inventory 	= cell_type[1]
+
 		self.width 			= CELL_WIDTH
 		self.height 		= CELL_HEIGHT
 		self.friction 		= -5.
-
-		self.inventory = Inventory()
+		self.occupied		= False
 
 		if self.name == "grass":
-			self.image 			= I_GRASS
-			self.image_shadow 	= I_GRASS
+			self.image 			= "I_GRASS"
+			self.image_shadow 	= "I_GRASS"
 			self.collide		= False
 
 		elif self.name == "tree":
-			self.image 			= I_TREE
-			self.image_shadow 	= I_TREE
+			self.image 			= "I_TREE"
+			self.image_shadow 	= "I_TREE"
 			self.collide		= True
 
 		elif self.name == "water":
-			self.image 			= I_WATER
-			self.image_shadow 	= I_WATER
+			self.image 			= "I_WATER"
+			self.image_shadow 	= "I_WATER"
 			self.collide		= True
 
 		elif self.name == "rock":
-			self.image 			= I_ROCK
-			self.image_shadow 	= I_ROCK
+			self.image 			= "I_ROCK"
+			self.image_shadow 	= "I_ROCK"
 			self.collide		= True
 
-		else:
-			self.image 			= I_BLACK
-			self.image_shadow 	= I_BLACK
+		elif self.name == "sand":
+			self.image 			= "I_SAND"
+			self.image_shadow 	= "I_SAND"
+			self.collide		= False
+
+		elif self.name == "wood":
+			self.image 			= "I_WOOD"
+			self.image_shadow 	= "I_WOOD"
 			self.collide		= True
+
+		elif self.name == "planck":
+			self.image 			= "I_PLANCK"
+			self.image_shadow 	= "I_PLANCK"
+			self.collide		= False
+
+		else:
+			self.image 			= "I_BLACK"
+			self.image_shadow 	= "I_BLACK"
+			self.collide		= True
+
+	def GetSavedAttribute(self):
+		return self.name, self.inventory
+
+	def AddItem(self, item):
+		self.inventory.AddItem(item)
+		print(self.inventory)
 
 	def Display(self, fenetre, pos):
 		x, y = pos
-		fenetre.blit(self.GetImage(True), (x, y));
-		self.inventory.Display(fenetre, (x, y))
+		fenetre.blit(self.GetImage(), (x, y));
+		self.inventory.Display(fenetre, "cell", pos=(x, y))
 
 	def GetImage(self, visible = True):
 		if visible:
-			return self.image
+			return images_dict[self.image]
 		else:
-			return self.image_shadow
+			return images_dict[self.image_shadow]
