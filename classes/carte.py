@@ -10,15 +10,19 @@ from classes.items import *
 # from classes.editor import *
 
 class World_Map:
-	def __init__(self, world):
+	def __init__(self, nb_lines, nb_columns):
 		self.time 			= 0
 
 		#All elements inherited from world instance
-		self.nb_lines	= world.nb_lines
-		self.nb_columns	= world.nb_columns
-
+		self.nb_lines	= nb_lines
+		self.nb_columns	= nb_columns
 
 		self.tab = []
+		for i in range(self.nb_lines):
+			self.tab.append([])
+			for j in range(self.nb_columns):
+				self.tab[i].append(Cell("grass"))
+
 		# for i in range(self.nb_lines):
 		# 	self.tab.append([Cell("ground") for j in range(self.nb_columns)])
 		#
@@ -27,24 +31,24 @@ class World_Map:
 		# 		if(i%3==0 and j%3==0):
 		# 			self.tab[i][j] = Cell("tree")
 
-		self.Load("save/edit")
+		# self.Load("save/edit")
 
 
-	def Load(self, file_name):
-		print("Loading...")
-		with open(file_name, 'rb') as file:
-			 depickler = pickle.Unpickler(file)
-			 self.loaded_tab = depickler.load()
-
-		self.tab = []
-		for i in range(self.nb_lines):
-			self.tab.append([])
-			for j in range(self.nb_columns):
-				try:
-					self.tab[i].append(Cell(self.loaded_tab[i][j]))
-				except:
-					self.tab[i].append(Cell("grass"))
-		print("Loaded")
+	# def Load(self, file_name):
+	# 	print("Loading...")
+	# 	with open(file_name, 'rb') as file:
+	# 		 depickler = pickle.Unpickler(file)
+	# 		 self.loaded_tab = depickler.load()
+	#
+	# 	self.tab = []
+	# 	for i in range(self.nb_lines):
+	# 		self.tab.append([])
+	# 		for j in range(self.nb_columns):
+	# 			try:
+	# 				self.tab[i].append(Cell(self.loaded_tab[i][j]))
+	# 			except:
+	# 				self.tab[i].append(Cell("grass"))
+	# 	print("Loaded")
 
 
 	def Save(self, file_name):
@@ -145,12 +149,12 @@ class World_Map:
 
 class Cell:
 	def __init__(self, cell_type):
-		if type(cell_type) == type(str()):
-			self.name		= cell_type
-			self.inventory 	= Inventory()
-		else:
-			self.name		= cell_type[0]
-			self.inventory 	= cell_type[1]
+		# if type(cell_type) == type(str()):
+		self.name		= cell_type
+		self.inventory 	= Inventory()
+		# else:
+		# 	self.name		= cell_type[0]
+		# 	self.inventory 	= cell_type[1]
 
 		self.width 			= CELL_WIDTH
 		self.height 		= CELL_HEIGHT
@@ -202,7 +206,6 @@ class Cell:
 
 	def AddItem(self, item):
 		self.inventory.AddItem(item)
-		print(self.inventory)
 
 	def Display(self, fenetre, pos):
 		x, y = pos

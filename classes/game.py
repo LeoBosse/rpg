@@ -13,10 +13,15 @@ from classes.world import *
 # from classes.editor import *
 
 class Game:
-	def __init__(self, number):
+	def __init__(self, number, load=False):
 
 		self.continuer 	= 1
 		self.number = number
+
+		self.path = os.getcwd()
+		self.folder_name = str(self.path) + "/save/game_" + self.number + "/"
+
+
 
 		#Keep track of witch keyboard key is pressed
 		self.pressed_keys = {	"north": 	False,
@@ -26,22 +31,24 @@ class Game:
 								"space":	False,
 								"c":		False
 								}
-		#List the keyboard keys that can not be pressed too long. Key names have to be the same as pressed_keys dictionnary
-		#self.max_key_duration = {	"up": 	0.1
-									#}
 
-		self.path = os.getcwd()
-		self.file_name = str(self.path) + "/save/save_" + str(self.number)
+		if load:
+			# print("Loading Game")
+			self.world = World(self.folder_name)
+		else:
+			self.world = World() #init world
+			# print("Game initialized")
 
 
-		self.world = World() #init world
 
 	def Save(self, file_name):
-		print("Saving...")
-		with open(file_name, 'wb') as file:
-			 pickler = pickle.Pickler(file)
-			 pickler.dump(self)
-		print("Saved")
+		text = font50.render("SAVING...", True, (0,0,0), (255, 0, 0))
+		fenetre.blit(text, 	(0, 0))
+		pygame.display.flip()
+		if not Path(self.folder_name).is_dir():
+			os.system("mkdir " + self.folder_name)
+
+		self.world.Save(self.folder_name)
 
 
 	def Play(self, fenetre):
@@ -101,7 +108,7 @@ class Game:
 					self.pressed_keys["north"] = g_turn_duration
 				elif event.key == K_DOWN or event.key == K_s:
 					if pygame.key.get_pressed()[K_LCTRL] or pygame.key.get_pressed()[K_RCTRL]:
-						self.Save(self.file_name)
+						self.Save(self.folder_name)
 					else:
 						self.pressed_keys["south"] = True
 				elif event.key==K_LEFT or event.key == K_q:

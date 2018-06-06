@@ -6,21 +6,54 @@ from classes.header import *
 # from classes.items import *
 from classes.perso import *
 from classes.carte import *
-#
 # #from mob import *
 # from classes.editor import *
 
 
 class World:
-	def __init__(self, load = False):
+	def __init__(self, load_folder = False):
 		self.time 		= 0
 
 		self.nb_lines	= NB_CELLS_WORLD_X
 		self.nb_columns	= NB_CELLS_WORLD_Y
 
-		self.world_map = World_Map(self)
-		self.perso = Perso()
-		self.PNGs = [PNG("alice", pos=(int(WORLD_WIDTH/2) + 30, int(WORLD_HEIGHT/2) + 30))]
+		if load_folder:
+			self.Load(load_folder)
+		else:
+			self.world_map = World_Map(self.nb_lines, self.nb_columns)
+			self.perso = Perso()
+			self.PNGs = [PNG("alice", pos=(int(WORLD_WIDTH/2) + 30, int(WORLD_HEIGHT/2) + 30))]
+
+
+	def Load(self, folder_name):
+		# print("Loading World", folder_name)
+		text = font50.render("LOADING...", True, (0,0,0), (255, 0, 0))
+		fenetre.blit(text, 	(0, 0))
+		pygame.display.flip()
+		with open(folder_name + "perso", 'rb') as file:
+			depickler = pickle.Unpickler(file)
+			self.perso = depickler.load()
+		with open(folder_name + "PNGs", 'rb') as file:
+			depickler = pickle.Unpickler(file)
+			self.PNGs = depickler.load()
+		with open(folder_name + "map", 'rb') as file:
+			depickler = pickle.Unpickler(file)
+			self.world_map = depickler.load()
+
+
+	def Save(self, folder_name):
+		# text = font50.render("SAVING...", True, (0,0,0), (255, 0, 0))
+		# fenetre.blit(text, 	(0, 0))
+		# pygame.display.flip()
+		with open(folder_name + "/map", 'wb') as file:
+			pickler = pickle.Pickler(file)
+			pickler.dump(self.world_map)
+		with open(folder_name + "/perso", 'wb') as file:
+			pickler = pickle.Pickler(file)
+			pickler.dump(self.perso)
+		with open(folder_name + "/PNGs", 'wb') as file:
+			pickler = pickle.Pickler(file)
+			pickler.dump(self.PNGs)
 
 
 	def Display(self, fenetre):

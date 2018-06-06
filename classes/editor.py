@@ -26,7 +26,7 @@ class Editor:
 		self.items_button_rect = pygame.Rect(self.world_cell_button_rect.right, 0, self.world_cell_button_rect.w, self.world_cell_button_rect.h)
 		self.PNGs_button_rect = pygame.Rect(self.items_button_rect.right, 0, self.world_cell_button_rect.w, self.world_cell_button_rect.h)
 
-		self.world_cells_list = [Cell("grass"), Cell("tree"), Cell("water"), Cell("rock"),Cell("black"), Cell("wood"), Cell("sand"), Cell("planck")]
+		self.world_cells_list = ["grass", "tree", "water", "rock", "black", "wood", "sand", "planck"]
 		self.items_cells_list = [Sword("basic sword", 1, 10, 10)]
 		self.PNGs_cells_list = [PNG()]
 
@@ -34,27 +34,20 @@ class Editor:
 		self.list_type = "world"
 		self.cell_list = self.world_cells_list
 
+		self.world_map = World_Map(self.nb_lines, self.nb_columns)
 		self.PNGs = []
 
-		# self.pressed_CTRL = False
 
 		self.diplayed_cells_list_rect = pygame.Rect(int(NB_PIX_SCREEN_X * self.display_map_ratio), self.world_cell_button_rect.h, NB_PIX_SCREEN_X * (1 - self.display_map_ratio), NB_PIX_SCREEN_Y)
 
-
-
-		self.tab = []
-		for i in range(self.nb_lines):
-			self.tab.append([])
-			for j in range(self.nb_columns):
-				self.tab[i].append(Cell("grass"))
-
+		# self.world_map.tab = []
+		# for i in range(self.nb_lines):
+		# 	self.world_map.tab.append([])
+		# 	for j in range(self.nb_columns):
+		# 		self.world_map.tab[i].append(Cell("grass"))
 
 		self.selected_cell_index = 0
 		self.selected_cell = self.world_cells_list[self.selected_cell_index]
-
-
-
-
 
 		self.screen_position = [0, 0]
 		self.speed = 50
@@ -97,7 +90,7 @@ class Editor:
 			for event in pygame.event.get():
 				if event.type==QUIT or (event.type==KEYDOWN and event.key==K_ESCAPE) or (event.type==KEYDOWN and event.key==K_RETURN):
 					wait_answer = False
-				elif event.type==KEYDOWN and (65 <= event.key <= 90 or 97 <= event.key <= 122 or 48 <= event.key <= 57):
+				elif event.type==KEYDOWN and (32 <= event.key <= 126):
 					answer += pygame.key.name(event.key)
 					print(answer)
 				elif event.type==KEYDOWN and event.key == K_BACKSPACE:
@@ -130,33 +123,47 @@ class Editor:
 	# 		depickler = pickle.Unpickler(file)
 	# 		self = depickler.load()
 	#
-	# 	# self.tab = []
+	# 	# self.world_map.tab = []
 	# 	# for i in range(self.nb_lines):
-	# 	# 	self.tab.append([])
+	# 	# 	self.world_map.tab.append([])
 	# 	# 	for j in range(self.nb_columns):
 	# 	# 		try:
-	# 	# 			self.tab[i].append(Cell(self.loaded_tab[i][j]))
+	# 	# 			self.world_map.tab[i].append(Cell(self.loaded_self.world_map.tab[i][j]))
 	# 	# 		except:
-	# 	# 			self.tab[i].append(Cell("grass"))
+	# 	# 			self.world_map.tab[i].append(Cell("grass"))
 	# 	print("Loaded")
 
-	def Save(self, file_name):
-		print("Saving...")
-		# self.saved_tab = []
+	def Save(self):
+		text = font50.render("SAVING...", True, (0,0,0), (255, 0, 0))
+		fenetre.blit(text, 	(0, 0))
+		pygame.display.flip()
+		# self.saved_self.world_map.tab = []
 		# for i in range(self.nb_lines):
-		# 	self.saved_tab.append([])
+		# 	self.saved_self.world_map.tab.append([])
 		# 	for j in range(self.nb_columns):
-		# 		self.saved_tab[i].append(self.tab[i][j].GetSavedAttribute())
-		with open(file_name, 'wb') as file:
-			 pickler = pickle.Pickler(file)
-			 pickler.dump(self)
-		print("Saved")
+		# 		self.saved_self.world_map.tab[i].append(self.world_map.tab[i][j].GetSavedAttribute())
+
+		with open(self.file_name, 'wb') as file:
+			pickler = pickle.Pickler(file)
+			pickler.dump(self)
+		folder_name = self.AskQuestion("Save map and PNGs in a game folder (/save/<your answer>/)? Enter blanck if not. Will overwrite existing 'map' and 'PNGs' files.")
+		if folder_name:
+			os.system("mkdir ./save/" + folder_name)
+			os.system("touch ./save/" + folder_name + "/map ./save/" + folder_name + "/PNGs")
+			with open("./save/" + folder_name + "/map", 'wb') as file:
+				print(file)
+				pickler = pickle.Pickler(file)
+				pickler.dump(self.world_map)
+			with open("./save/" + folder_name + "/PNGs", 'wb') as file:
+				print(file)
+				pickler = pickle.Pickler(file)
+				pickler.dump(self.PNGs)
 
 
 	def GetCellFromCoordinates(self, w_coor):
 		"""Get Cell object corresponding to a world coordinates (w_line, w_col)"""
 		w_l, w_c = w_coor
-		return self.tab[w_l][w_c]
+		return self.world_map.tab[w_l][w_c]
 
 	def GetCellCoordinates(self, w_pos):
 		"""Get Cell corrdinates (line and column) corresponding to a world coordinates (w_x, w_y)"""
@@ -209,7 +216,10 @@ class Editor:
 		#Display the cell list on the right of the screen
 		pygame.draw.rect(fenetre, (0,0,0), self.diplayed_cells_list_rect)
 		for i, c in enumerate(self.cell_list):
-			fenetre.blit(c.GetImage(), (self.diplayed_cells_list_rect.x + int((i * CELL_HEIGHT) / self.diplayed_cells_list_rect.h), self.diplayed_cells_list_rect.top + (i % (self.diplayed_cells_list_rect.h / CELL_HEIGHT)) * CELL_HEIGHT));
+			if self.list_type == "world":
+				fenetre.blit(Cell(c).GetImage(), (self.diplayed_cells_list_rect.x + int((i * CELL_HEIGHT) / self.diplayed_cells_list_rect.h), self.diplayed_cells_list_rect.top + (i % (self.diplayed_cells_list_rect.h / CELL_HEIGHT)) * CELL_HEIGHT));
+			else:
+				fenetre.blit(c.GetImage(), (self.diplayed_cells_list_rect.x + int((i * CELL_HEIGHT) / self.diplayed_cells_list_rect.h), self.diplayed_cells_list_rect.top + (i % (self.diplayed_cells_list_rect.h / CELL_HEIGHT)) * CELL_HEIGHT));
 
 		pygame.draw.rect(fenetre, (255,0,0), (self.diplayed_cells_list_rect.x + int((self.selected_cell_index * CELL_HEIGHT) / self.diplayed_cells_list_rect.h), self.diplayed_cells_list_rect.top + (self.selected_cell_index % (self.diplayed_cells_list_rect.h / CELL_HEIGHT)) * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT), 2);
 
@@ -220,23 +230,23 @@ class Editor:
 
 			elif event.type==MOUSEBUTTONDOWN and event.button==1:
 				self.ManageMouseCLIC(event.pos, "down")
+				self.mouse_down = True
 			elif  event.type==MOUSEBUTTONUP and event.button==1:
 				self.ManageMouseCLIC(event.pos, "up")
+				self.mouse_down = False
 
 			elif event.type==KEYDOWN:
 				if event.key == K_UP or event.key == K_z:
 					self.pressed_keys["north"] = True
 				elif event.key == K_DOWN or event.key == K_s:
 					if pygame.key.get_pressed()[K_LCTRL] or pygame.key.get_pressed()[K_RCTRL]:
-						self.Save(self.file_name)
+						self.Save()
 					else:
 						self.pressed_keys["south"] = True
 				elif event.key==K_LEFT or event.key == K_q:
 					self.pressed_keys["west"] = True
 				elif event.key==K_RIGHT or event.key == K_d:
 					self.pressed_keys["east"] = True
-				# elif event.key==K_LCTRL or event.key==K_RCTRL:
-				# 	self.pressed_CTRL = True
 				elif event.key==K_l:
 					self.Load(self.file_name)
 
@@ -249,13 +259,13 @@ class Editor:
 					self.pressed_keys["west"] = False
 				elif event.key==K_RIGHT or event.key == K_d:
 					self.pressed_keys["east"] = False
-				# elif event.key==K_LCTRL or K_RCTRL:
-				# 	self.pressed_CTRL = False
 
 	def ManageMouseCLIC(self, pos, type):
 		x, y = pos
-		if type == "down" and x > self.diplayed_cells_list_rect.x:
-			if self.world_cell_button_rect.top < y < self.world_cell_button_rect.bottom:
+
+		if type == "down" and x > self.diplayed_cells_list_rect.x: #Down Clic on the right panel, selecting a cell/item/png or clicing on button
+			if self.world_cell_button_rect.top < y < self.world_cell_button_rect.bottom: #Clicing on the 3 top button to choose between world/item/png list
+				self.selected_cell_index = 0
 				if self.world_cell_button_rect.left < x < self.world_cell_button_rect.right:
 					self.list_type = "world"
 					self.cell_list = self.world_cells_list
@@ -266,13 +276,13 @@ class Editor:
 					self.list_type = "PNGs"
 					self.cell_list = self.PNGs_cells_list
 
-			elif y > self.diplayed_cells_list_rect.top:
+			elif y > self.diplayed_cells_list_rect.top: #Selecting a new cell/item/png from the list
 				n = int((x - self.diplayed_cells_list_rect.x) / CELL_WIDTH) * int(self.diplayed_cells_list_rect.h / CELL_HEIGHT) + int((y - self.diplayed_cells_list_rect.top) / CELL_HEIGHT)
 				if n < len(self.cell_list):
 					self.selected_cell_index = n
 					self.selected_cell = self.cell_list[self.selected_cell_index]
 
-		elif type == "down" and x < self.diplayed_cells_list_rect.x:
+		elif type == "down" and x < self.diplayed_cells_list_rect.x: #Clicing down on the map. Register the position
 			self.mouse_down = True
 			self.mouse_start_pos = (x + self.screen_position[0], y + self.screen_position[1])
 
@@ -284,15 +294,17 @@ class Editor:
 			if self.list_type == "world":
 				for w in range(min(w1, w2), max(w1, w2) + 1):
 					for c in range(min(c1, c2), max(c1, c2) + 1):
-						self.tab[w][c] = self.selected_cell
+						self.world_map.tab[w][c] = Cell(self.selected_cell)
+						# print("Changing cell to " + self.selected_cell)
 			elif self.list_type == "items":
-				print("Adding an item to a cell")
-				self.tab[w2][c2].AddItem(self.selected_cell)
+				# print("Adding an item to a cell")
+				self.world_map.tab[w2][c2].AddItem(self.selected_cell)
+				# print("adding item")
 			elif self.list_type == "PNGs":
 				PNG_name = self.AskQuestion("What is its name?")
 				self.PNGs.append(PNG(PNG_name, (x + self.screen_position[0], y + self.screen_position[1])))
-
-
+				# print("adding png")
+			self.mouse_down = False
 
 		elif self.mouse_down and type == "up":
 			self.mouse_down = False

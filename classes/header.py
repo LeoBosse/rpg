@@ -13,6 +13,7 @@ import time as time
 import random as rand
 
 import pickle
+from pathlib import Path
 
 PATH = "/home/leo/ProgrammesPython/rpg/"
 
@@ -23,7 +24,7 @@ while a != 0:
 
 font = pygame.font.SysFont(pygame.font.get_default_font(), 25)
 font2 = pygame.font.SysFont(pygame.font.get_default_font(), 20)
-
+font50 = pygame.font.SysFont(pygame.font.get_default_font(), 50)
 
 # fenetre = pygame.display.set_mode((0, 0), pygame.RESIZABLE | pygame.FULLSCREEN)
 fenetre = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -90,3 +91,6 @@ images_dict = {	"I_GRASS"			: pygame.image.load(world_images_folder + "grass.bmp
 
 				"I_PNG"				: pygame.image.load(characters_images_folder + "default_character.bmp").convert_alpha()
 				}
+
+images_dict["I_SWORD"].set_colorkey((0,0,255))
+images_dict["I_ITEM"].set_colorkey((0,0,255))

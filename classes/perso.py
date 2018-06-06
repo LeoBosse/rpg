@@ -33,7 +33,7 @@ class Character:
 		# 	if not self.speech_list[- 1 - i]:
 		# 		del self.speech_list[- 1 - i]
 		# self.speech_list	= [i.replace("\\", "\n") for i in self.speech_list]
-		print(self.speech_list)
+		# print(self.speech_list)
 		self.speaking		= False
 		self.speech			= ""
 		self.speech_rect	= pygame.Rect(0,0,0,0)
@@ -69,7 +69,10 @@ class Character:
 
 
 	def GetSpeechLine(self):
-		return self.speech_list[self.speech_index].replace("\0", "").split("\\n")
+		if self.speech_index < len(self.speech_list):
+			return self.speech_list[self.speech_index].replace("\0", "").split("\\n")
+		else:
+			return ""
 
 
 	def PlayTurn(self, pressed_keys, world):

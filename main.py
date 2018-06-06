@@ -76,15 +76,15 @@ def Main():
 					wait_event=False
 				elif event.type==KEYDOWN:
 					if event.key==K_1 or event.key==K_a:
-						game_number=1
+						game_number="a"
 						wait_event=False
 						play=True
 					elif event.key==K_2 or event.key==K_b:
-						game_number=2
+						game_number="b"
 						wait_event=False
 						play=True
 					elif event.key==K_3 or event.key==K_c:
-						game_number=3
+						game_number="c"
 						wait_event=False
 						play=True
 					elif event.key==K_0 or event.key==K_e:
@@ -92,24 +92,22 @@ def Main():
 						wait_event=False
 
 		if play:
-			try:
-				with open(PATH + "/save/save_" + str(game_number), 'rb') as file:
-					depickler = pickle.Unpickler(file)
-					game = depickler.load()
-					print("Game loaded")
-			except:
-				game = Game(game_number)
-				print("Game created")
+			load = Path("./save/game_" + game_number)
+			# print(load, load.is_dir())
+			game = Game(game_number, load.is_dir())
+
 
 			game.Play(fenetre)
 
-			
+
 		if edit:
 			try:
+				text = font50.render("LOADING...", True, (0,0,0), (255, 0, 0))
+				fenetre.blit(text, 	(0, 0))
+				pygame.display.flip()
 				with open(PATH + "/save/edit", 'rb') as file:
 					depickler = pickle.Unpickler(file)
 					edit = depickler.load()
-					print("Editor loaded")
 			except:
 				edit = Editor()
 				print("Editor created")

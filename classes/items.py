@@ -40,7 +40,7 @@ class Inventory:
 		continuer = True
 		while continuer:
 			for event in pygame.event.get():
-				if event.type==QUIT or (event.type==KEYDOWN and event.key==K_ESCAPE):
+				if event.type==QUIT or (event.type==KEYDOWN and event.key in [K_ESCAPE, K_i]):
 					continuer = False
 
 
