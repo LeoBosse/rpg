@@ -26,15 +26,17 @@ font = pygame.font.SysFont(pygame.font.get_default_font(), 25)
 font2 = pygame.font.SysFont(pygame.font.get_default_font(), 20)
 font50 = pygame.font.SysFont(pygame.font.get_default_font(), 50)
 
-# fenetre = pygame.display.set_mode((0, 0), pygame.RESIZABLE | pygame.FULLSCREEN)
-fenetre = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-# fenetre = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("RPG")
+
 
 Info = pygame.display.Info()
 
 SCREEN_HEIGHT	= Info.current_h - 100
 SCREEN_WIDTH	= Info.current_w - 100
+
+# fenetre = pygame.display.set_mode((0, 0), pygame.RESIZABLE | pygame.FULLSCREEN)
+# fenetre = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+fenetre = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("RPG")
 
 
 
@@ -47,9 +49,8 @@ ITEM_HEIGHT			= 20
 NB_CELLS_SCREEN_X 	= int(SCREEN_WIDTH / CELL_WIDTH + 1)
 NB_CELLS_SCREEN_Y	= int(SCREEN_HEIGHT / CELL_HEIGHT + 1)
 
-NB_CELLS_WORLD_X 	= 500
-NB_CELLS_WORLD_Y 	= 500
-print(NB_CELLS_WORLD_X, NB_CELLS_WORLD_Y)
+NB_CELLS_WORLD_X 	= 200
+NB_CELLS_WORLD_Y 	= 200
 
 NB_PIX_SCREEN_X   	= NB_CELLS_SCREEN_X * CELL_WIDTH
 NB_PIX_SCREEN_Y   	= NB_CELLS_SCREEN_Y * CELL_HEIGHT

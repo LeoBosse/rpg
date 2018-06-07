@@ -43,7 +43,10 @@ class Inventory:
 				if event.type==QUIT or (event.type==KEYDOWN and event.key in [K_ESCAPE, K_i]):
 					continuer = False
 
+	def Empty(self):
+		self.list = []
 
+		
 	def IsEmpty(self):
 		return len(self.list) == 0
 

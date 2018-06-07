@@ -122,6 +122,8 @@ class World_Map:
 		"""Return the line coordinate from a pixel position. !!! Can be different from its place in self.lines[] !!! -> Use _GetLignIndexInList() for that."""
 		return int(w_x / CELL_WIDTH)
 
+	def Empty_Cell(self, coord):
+		self.GetCellFromCoordinates(coord).Empty()
 
 	def Display(self, fenetre, screen_pos, perso):
 		"""Display the world_map given the world position of the upper left corner of the screen"""
@@ -200,6 +202,10 @@ class Cell:
 			self.image 			= "I_BLACK"
 			self.image_shadow 	= "I_BLACK"
 			self.collide		= True
+
+
+	def Empty(self):
+		self.inventory.Empty()
 
 	def GetSavedAttribute(self):
 		return self.name, self.inventory

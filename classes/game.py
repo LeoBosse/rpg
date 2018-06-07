@@ -36,7 +36,7 @@ class Game:
 			# print("Loading Game")
 			self.world = World(self.folder_name)
 		else:
-			self.world = World() #init world
+			self.world = World(str(self.path) + "/save/game_init/") #init world
 			# print("Game initialized")
 
 

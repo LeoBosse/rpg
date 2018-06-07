@@ -308,7 +308,7 @@ class Character:
 
 class Perso(Character):
 	def __init__(self):
-		Character.__init__(self, "adventurer", pos=(int(WORLD_WIDTH/2), int(WORLD_HEIGHT/2)))
+		Character.__init__(self, "adventurer", pos=(50 * CELL_WIDTH, 50 * CELL_HEIGHT))
 		self.speed			= 10
 		self.speeds			= [0, 0] #speed [east+/west-, up+/down-]
 		self.direction		= -1 #-1: not moving, 0: south, 1: east, 2:north, 3:west

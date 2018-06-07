@@ -223,6 +223,17 @@ class Editor:
 
 		pygame.draw.rect(fenetre, (255,0,0), (self.diplayed_cells_list_rect.x + int((self.selected_cell_index * CELL_HEIGHT) / self.diplayed_cells_list_rect.h), self.diplayed_cells_list_rect.top + (self.selected_cell_index % (self.diplayed_cells_list_rect.h / CELL_HEIGHT)) * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT), 2);
 
+
+	def DeleteItem(self, pos):
+		screen_x, screen_y = pos
+		x, y = screen_x + self.screen_position[0], screen_y + self.screen_position[1]
+		l, c = self.world_map.GetCellCoordinates((x, y))
+		self.world_map.Empty_Cell((l, c))
+		self.PNGs = [p for p in self.PNGs if not p.rect.collidepoint((x,y))]
+
+
+
+
 	def GetExternalEvents(self):
 		for event in pygame.event.get():
 			if event.type==QUIT or (event.type==KEYDOWN and event.key==K_ESCAPE):
@@ -234,6 +245,9 @@ class Editor:
 			elif  event.type==MOUSEBUTTONUP and event.button==1:
 				self.ManageMouseCLIC(event.pos, "up")
 				self.mouse_down = False
+			elif  event.type==MOUSEBUTTONUP and event.button==3:
+				self.ManageMouseCLIC(event.pos, "right")
+				# self.mouse_down = False
 
 			elif event.type==KEYDOWN:
 				if event.key == K_UP or event.key == K_z:
@@ -308,3 +322,6 @@ class Editor:
 
 		elif self.mouse_down and type == "up":
 			self.mouse_down = False
+
+		elif type == "right":
+			self.DeleteItem(pos)
