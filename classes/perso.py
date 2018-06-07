@@ -25,15 +25,15 @@ class Character:
 		try:
 			self.speech_list	= open(self.text_file, "r").read().split("\n\n")
 		except:
-			self.speech_list	= open(self.text_file, "a").close()
-			self.speech_list	= open(self.text_file, "r").read().split("\n\n")
+			os.system("touch " + self.text_file)
+			self.speech_list = [""]
 
 		self.speech_list	= [i for i in self.speech_list if i]
 		# for i in range(len(self.speech_list)):
 		# 	if not self.speech_list[- 1 - i]:
 		# 		del self.speech_list[- 1 - i]
 		# self.speech_list	= [i.replace("\\", "\n") for i in self.speech_list]
-		# print(self.speech_list)
+		print(self.speech_list)
 		self.speaking		= False
 		self.speech			= ""
 		self.speech_rect	= pygame.Rect(0,0,0,0)
@@ -60,9 +60,16 @@ class Character:
 
 
 	def Speak(self):
-		self.speaking = True
-		self.speech = self.GetSpeechLine()
-		self.speech = [font.render(s.strip(), True, (0,0,0), (255,255,255)) for s in self.speech]
+		try:
+			self.speech_list	= open(self.text_file, "r").read().split("\n\n")
+		except:
+			os.system("touch " + self.text_file)
+			self.speech_list = [""]
+
+		if self.speech_list[0]:
+			self.speaking = True
+			self.speech = self.GetSpeechLine()
+			self.speech = [font.render(s.strip(), True, (0,0,0), (255,255,255)) for s in self.speech]
 		# w, h = font.size(self.speech)
 
 		# self.speech_rect = pygame.Rect(self.rect.centerx - w / 2, self.rect.top - h, w, h)
@@ -77,6 +84,7 @@ class Character:
 
 	def PlayTurn(self, pressed_keys, world):
 		self.Move(pressed_keys, world)
+		self.PickUpItem
 
 	def GetVisionRadius(self):
 		"""Return the furthest distance the perso can see (in pixels). Should take object into account for the future"""
